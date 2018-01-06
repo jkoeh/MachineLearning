@@ -25,7 +25,7 @@
 
 %% Initialization
 clear ; close all; clc
-
+    
 %% ==================== Part 1: Basic Function ====================
 % Complete warmUpExercise.m
 fprintf('Running warmUpExercise ... \n');
