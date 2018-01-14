@@ -27,7 +27,7 @@ m = size(X, 1);
 
          
 % You need to return the following variables correctly 
-J = 0;
+
 X = [ones(m,1), X];
 Theta1_grad = zeros(size(Theta1));
 Theta2_grad = zeros(size(Theta2));
@@ -36,8 +36,30 @@ a2 = [ones(m,1), a2];
 a3 = sigmoid(a2*Theta2');
 eye_matrix = eye(num_labels);
 y_matrix = eye_matrix(y,:);
+Theta1_reg= Theta1(:,2:end);
+Theta2_reg= Theta2(:,2:end);
+J = (1/m *sum(sum(-y_matrix .* log(a3) -(1-y_matrix).*log(1-a3))))... 
+    + lambda/(2*m)*(sum(sum(Theta1_reg.^2))+sum(sum(Theta2_reg.^2)));
+for t=1:m
+% l=1    
+    a1 = X(t, :);
+% l=2    
+    z2 = a1*Theta1';
+    a2 = [ones(1,1), sigmoid(z2)];
     
-J = (1/m *sum(sum(-y_matrix .* log(a3) -(1-y_matrix).*log(1-a3))));
+    a3 = sigmoid(a2*Theta2');
+    delta3 = (a3 -y_matrix(t, :))' ;
+    delta2 = Theta2'*delta3.*[1, sigmoidGradient(z2)]';
+    delta2 = delta2(2:end);
+    Theta1_grad = Theta1_grad + delta2 * a1;
+    Theta2_grad = Theta2_grad + delta3 * a2;
+    
+    
+end
+regulator_1 = [zeros(size(Theta1, 1), 1) Theta1(:,2:end)];
+regulator_2 = [zeros(size(Theta2, 1), 1) Theta2(:,2:end)];
+Theta1_grad = Theta1_grad/m + lambda/m*regulator_1;
+Theta2_grad = Theta2_grad/m + lambda/m*regulator_2;
 % ====================== YOUR CODE HERE ======================
 % Instructions: You should complete the code by working through the
 %               following parts.
@@ -49,7 +71,7 @@ J = (1/m *sum(sum(-y_matrix .* log(a3) -(1-y_matrix).*log(1-a3))));
 %
 % Part 2: Implement the backpropagation algorithm to compute the gradients
 %         Theta1_grad and Theta2_grad. You should return the partial derivatives of
-%         the cost function with respect to Theta1 and Theta2 in Theta1_grad and
+%         the cost function with respect to Theta1 and Theta2 isubmitn Theta1_grad and
 %         Theta2_grad, respectively. After implementing Part 2, you can check
 %         that your implementation is correct by running checkNNGradients
 %
