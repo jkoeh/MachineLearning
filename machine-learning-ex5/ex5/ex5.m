@@ -218,3 +218,67 @@ end
 
 fprintf('Program paused. Press enter to continue.\n');
 pause;
+fprintf('Calculate error with the polynomial and lambda derived from learning curve.\n');
+lambda = 3;
+
+theta = trainLinearReg(X_poly, y, lambda);
+error = linearRegCostFunction(X_poly_test, ytest, theta, 0);
+fprintf('The final error with a lambda of %f and polynomial term of %f is %f.\n', lambda, size(X_poly, 2), error);
+fprintf('Program paused. Press enter to continue.\n');
+pause;
+
+%% =========== Part 9: Learning Curve for Polynomial Regression for random selection of sample=============
+%
+
+lambda = 0.01;
+[theta] = trainLinearReg(X_poly, y, lambda);
+
+% Plot training data and fit
+figure(1);
+plot(X, y, 'rx', 'MarkerSize', 10, 'LineWidth', 1.5);
+plotFit(min(X), max(X), mu, sigma, theta, p);
+xlabel('Change in water level (x)');
+ylabel('Water flowing out of the dam (y)');
+title (sprintf('Polynomial Regression Fit (lambda = %f)', lambda));
+
+figure(2);
+% create two vectors 1X50 that contains random number betwen 5 and the
+% total number of rows in training and validation set
+r_train =randi([9 size(X_poly,1)-1],1);
+r_val = randi([16 size(X_poly_val,1)-1],1);
+error_train = zeros(r_train, 1);
+error_val   = zeros(r_train, 1);
+iteration = 50;
+for i=1:iteration
+%     create random unique index
+    randomRowsTrain = randperm(size(X_poly, 1),r_train);
+    randomRowsVal =  randperm(size(X_poly_val, 1),r_val);
+    
+    X_poly_sub =X_poly(randomRowsTrain, :);
+    y_sub = y(randomRowsTrain);
+    X_poly_val_sub =X_poly_val(randomRowsVal, :);
+    yval_sub = yval(randomRowsVal);
+   
+    [error_train_sub, error_val_sub] = ...
+        learningCurve(X_poly_sub, y_sub, X_poly_val_sub, yval_sub, lambda);
+    error_train = error_train + error_train_sub;
+    error_val = error_val + error_val_sub;
+end
+error_train=error_train/iteration;
+error_val=error_val/iteration;
+plot(1:r_train, error_train, 1:r_train, error_val);
+
+title(sprintf('Polynomial Regression Learning Curve (lambda = %f)', lambda));
+xlabel('Number of training examples')
+ylabel('Error')
+axis([0 13 0 100])
+legend('Train', 'Cross Validation')
+
+fprintf('Polynomial Regression (lambda = %f)\n\n', lambda);
+fprintf('# Training Examples\tTrain Error\tCross Validation Error\n');
+for i = 1:r_train
+    fprintf('  \t%d\t\t%f\t%f\n', i, error_train(i), error_val(i));
+end
+
+fprintf('Program paused. Press enter to continue.\n');
+pause;
